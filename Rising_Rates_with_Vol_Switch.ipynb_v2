@@ -1,0 +1,782 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOvzfNZMLnWvL7MbW6ZqbbM",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/awolaja/Anythink-Market-ti87rcba/blob/main/Rising_Rates_with_Vol_Switch.ipynb_v2\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "pip install alpaca-trade-api"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "Muk7ivef7tH1",
+        "outputId": "b5070f80-aac9-470a-dbc4-3a7dc44c0c54"
+      },
+      "execution_count": 400,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: alpaca-trade-api in /usr/local/lib/python3.10/dist-packages (3.0.2)\n",
+            "Requirement already satisfied: pandas>=0.18.1 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.5.3)\n",
+            "Requirement already satisfied: numpy>=1.11.1 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.23.5)\n",
+            "Requirement already satisfied: requests<3,>2 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (2.31.0)\n",
+            "Requirement already satisfied: urllib3<2,>1.24 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.26.18)\n",
+            "Requirement already satisfied: websocket-client<2,>=0.56.0 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.6.4)\n",
+            "Requirement already satisfied: websockets<11,>=9.0 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (10.4)\n",
+            "Requirement already satisfied: msgpack==1.0.3 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.0.3)\n",
+            "Requirement already satisfied: aiohttp==3.8.2 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (3.8.2)\n",
+            "Requirement already satisfied: PyYAML==6.0 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (6.0)\n",
+            "Requirement already satisfied: deprecation==2.1.0 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (2.1.0)\n",
+            "Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (23.1.0)\n",
+            "Requirement already satisfied: charset-normalizer<3.0,>=2.0 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (2.1.1)\n",
+            "Requirement already satisfied: multidict<6.0,>=4.5 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (5.2.0)\n",
+            "Requirement already satisfied: async-timeout<5.0,>=4.0.0a3 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (4.0.3)\n",
+            "Requirement already satisfied: yarl<2.0,>=1.0 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (1.9.2)\n",
+            "Requirement already satisfied: frozenlist>=1.1.1 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (1.4.0)\n",
+            "Requirement already satisfied: aiosignal>=1.1.2 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (1.3.1)\n",
+            "Requirement already satisfied: packaging in /usr/local/lib/python3.10/dist-packages (from deprecation==2.1.0->alpaca-trade-api) (23.2)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.1 in /usr/local/lib/python3.10/dist-packages (from pandas>=0.18.1->alpaca-trade-api) (2.8.2)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas>=0.18.1->alpaca-trade-api) (2023.3.post1)\n",
+            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests<3,>2->alpaca-trade-api) (3.4)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.10/dist-packages (from requests<3,>2->alpaca-trade-api) (2023.7.22)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.10/dist-packages (from python-dateutil>=2.8.1->pandas>=0.18.1->alpaca-trade-api) (1.16.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install --upgrade alpaca-trade-api\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "n2x8h_HsIS7V",
+        "outputId": "59dda329-4692-436b-f673-b148b4c69033"
+      },
+      "execution_count": 401,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: alpaca-trade-api in /usr/local/lib/python3.10/dist-packages (3.0.2)\n",
+            "Requirement already satisfied: pandas>=0.18.1 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.5.3)\n",
+            "Requirement already satisfied: numpy>=1.11.1 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.23.5)\n",
+            "Requirement already satisfied: requests<3,>2 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (2.31.0)\n",
+            "Requirement already satisfied: urllib3<2,>1.24 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.26.18)\n",
+            "Requirement already satisfied: websocket-client<2,>=0.56.0 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.6.4)\n",
+            "Requirement already satisfied: websockets<11,>=9.0 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (10.4)\n",
+            "Requirement already satisfied: msgpack==1.0.3 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (1.0.3)\n",
+            "Requirement already satisfied: aiohttp==3.8.2 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (3.8.2)\n",
+            "Requirement already satisfied: PyYAML==6.0 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (6.0)\n",
+            "Requirement already satisfied: deprecation==2.1.0 in /usr/local/lib/python3.10/dist-packages (from alpaca-trade-api) (2.1.0)\n",
+            "Requirement already satisfied: attrs>=17.3.0 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (23.1.0)\n",
+            "Requirement already satisfied: charset-normalizer<3.0,>=2.0 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (2.1.1)\n",
+            "Requirement already satisfied: multidict<6.0,>=4.5 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (5.2.0)\n",
+            "Requirement already satisfied: async-timeout<5.0,>=4.0.0a3 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (4.0.3)\n",
+            "Requirement already satisfied: yarl<2.0,>=1.0 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (1.9.2)\n",
+            "Requirement already satisfied: frozenlist>=1.1.1 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (1.4.0)\n",
+            "Requirement already satisfied: aiosignal>=1.1.2 in /usr/local/lib/python3.10/dist-packages (from aiohttp==3.8.2->alpaca-trade-api) (1.3.1)\n",
+            "Requirement already satisfied: packaging in /usr/local/lib/python3.10/dist-packages (from deprecation==2.1.0->alpaca-trade-api) (23.2)\n",
+            "Requirement already satisfied: python-dateutil>=2.8.1 in /usr/local/lib/python3.10/dist-packages (from pandas>=0.18.1->alpaca-trade-api) (2.8.2)\n",
+            "Requirement already satisfied: pytz>=2020.1 in /usr/local/lib/python3.10/dist-packages (from pandas>=0.18.1->alpaca-trade-api) (2023.3.post1)\n",
+            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests<3,>2->alpaca-trade-api) (3.4)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.10/dist-packages (from requests<3,>2->alpaca-trade-api) (2023.7.22)\n",
+            "Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.10/dist-packages (from python-dateutil>=2.8.1->pandas>=0.18.1->alpaca-trade-api) (1.16.0)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 402,
+      "metadata": {
+        "id": "pQ5QVvqm7SkU"
+      },
+      "outputs": [],
+      "source": [
+        "import pandas as pd\n",
+        "import yfinance as yf\n",
+        "import numpy as np\n",
+        "import alpaca_trade_api as tradeapi\n",
+        "from datetime import datetime, timedelta\n",
+        "#from alpaca_trade_api import REST"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Define your Alpaca API key and secret key\n",
+        "api_key = \"PKB5WOUADWU7FATFGCYO\"\n",
+        "api_secret = \"s5SHSPqQ7NdZdS5xIGNrb1PeOeSY6MIJ6csRy9Fp\"\n",
+        "BASE_URL = 'https://paper-api.alpaca.markets'"
+      ],
+      "metadata": {
+        "id": "nS9ulrOT8OE5"
+      },
+      "execution_count": 403,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Initialize the Alpaca API connection\n",
+        "api = tradeapi.REST(api_key, api_secret, base_url=BASE_URL)"
+      ],
+      "metadata": {
+        "id": "7BAiMx5O9Ij1"
+      },
+      "execution_count": 404,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# getting historical data\n",
+        "# def get_historical_data(symbol, timeframe='1Day', limit=100):\n",
+        "#     barset = api.get_bars(symbol, timeframe, limit=limit).df\n",
+        "#     return barset"
+      ],
+      "metadata": {
+        "id": "rxX8xF_m9N_P"
+      },
+      "execution_count": 405,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Specify your desired start date in the format YYYY-MM-DD\n",
+        "start_date = '2023-01-01'"
+      ],
+      "metadata": {
+        "id": "Fdft4x_pR-oW"
+      },
+      "execution_count": 406,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Function to retrieve historical data\n",
+        "# def get_historical_data(symbol, timeframe='1Day', limit=100):\n",
+        "#     start_date = '2023-01-01'  # Make sure this date is in the past and in the correct format\n",
+        "#     try:\n",
+        "#         barset = api.get_bars(symbol, timeframe, start=start_date, limit=limit).df\n",
+        "#         print(f\"Retrieved data for {symbol}:\")\n",
+        "#         print(barset.head())  # Print the first few rows of the DataFrame\n",
+        "#         return barset\n",
+        "#     except tradeapi.rest.APIError as e:\n",
+        "#         print(f\"An API error occurred: {e}\")\n",
+        "#     except Exception as e:\n",
+        "#         print(f\"An unexpected error occurred: {e}\")\n",
+        "#     return None"
+      ],
+      "metadata": {
+        "id": "cGJqlFQpR8i_"
+      },
+      "execution_count": 407,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Function to retrieve historical data\n",
+        "def get_historical_data(symbol, timeframe='1Day', limit=100):\n",
+        "    start_date = '2023-01-01'  # Make sure this date is in the past and in the correct format\n",
+        "    try:\n",
+        "        barset = api.get_bars(symbol, timeframe, start=start_date, limit=limit).df\n",
+        "        print(f\"Retrieved data for {symbol}:\")\n",
+        "        print(barset.head())  # Print the first few rows of the DataFrame\n",
+        "\n",
+        "        # Access the timestamp index\n",
+        "        timestamps = barset.index\n",
+        "\n",
+        "        # Check if the column names need to be renamed (case-insensitive)\n",
+        "        for column in barset.columns:\n",
+        "            if column.lower() == 'close':\n",
+        "                barset.rename(columns={column: 'close'}, inplace=True)\n",
+        "\n",
+        "        return barset\n",
+        "    except tradeapi.rest.APIError as e:\n",
+        "        print(f\"An API error occurred: {e}\")\n",
+        "    except Exception as e:\n",
+        "        print(f\"An unexpected error occurred: {e}\")\n",
+        "    return None\n",
+        "\n"
+      ],
+      "metadata": {
+        "id": "ax4WalI9qpqR"
+      },
+      "execution_count": 447,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "#checking column 'Close' from alpaca\n",
+        "import pandas as pd\n",
+        "\n",
+        "import pandas as pd\n",
+        "\n",
+        "def check_close_column(dataframe):\n",
+        "    \"\"\"\n",
+        "    Check if a DataFrame contains a column named 'Close'.\n",
+        "\n",
+        "    Args:\n",
+        "        dataframe (pd.DataFrame): The DataFrame to check.\n",
+        "\n",
+        "    Returns:\n",
+        "        bool: True if 'Close' column exists, False otherwise.\n",
+        "    \"\"\"\n",
+        "    return 'Close' in dataframe.columns\n",
+        "\n",
+        "# Sample DataFrame\n",
+        "data = {'Date': ['2023-01-01', '2023-01-02', '2023-01-03'],\n",
+        "        'Close': [100.0, 101.0, 102.0]}\n",
+        "df = pd.DataFrame(data)\n",
+        "\n",
+        "# Check if 'Close' column exists\n",
+        "if check_close_column(df):\n",
+        "    print(\"DataFrame contains 'Close' column.\")\n",
+        "else:\n",
+        "    print(\"DataFrame does not contain 'Close' column.\")\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "ac47zXwZhjnf",
+        "outputId": "9b3ba5b6-dbcb-481b-9254-541280d00552"
+      },
+      "execution_count": 448,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "DataFrame contains 'Close' column.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# calcuting rsi\n",
+        "def calculate_rsi(data, period=14):\n",
+        "    delta = data['close'].diff()\n",
+        "    gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()\n",
+        "    loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()\n",
+        "\n",
+        "    rs = gain / loss\n",
+        "    rsi = 100 - (100 / (1 + rs))\n",
+        "    return rsi"
+      ],
+      "metadata": {
+        "id": "Q2p48zSL9Ptu"
+      },
+      "execution_count": 449,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Function to calculate moving average\n",
+        "def calculate_ma(data, period=25):\n",
+        "    ma = data['close'].rolling(window=period).mean()\n",
+        "    return ma"
+      ],
+      "metadata": {
+        "id": "SQhKX6jc9VOQ"
+      },
+      "execution_count": 450,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "def calculate_max_drawdown(data):\n",
+        "    \"\"\"\n",
+        "    Calculate the maximum drawdown of a financial time series.\n",
+        "\n",
+        "    Args:\n",
+        "        data (pd.DataFrame): DataFrame containing financial data with a 'Close' column.\n",
+        "\n",
+        "    Returns:\n",
+        "        pd.Series: Series containing the maximum drawdown values.\n",
+        "    \"\"\"\n",
+        "    if check_close_column(data):\n",
+        "        close_prices = data['close']\n",
+        "        roll_max = close_prices.rolling(10, min_periods=1).max()\n",
+        "        daily_drawdown = close_prices / roll_max - 1.0\n",
+        "        max_drawdown = daily_drawdown.rolling(10, min_periods=1).min()\n",
+        "        return max_drawdown\n",
+        "    else:\n",
+        "        raise ValueError(\"Data does not contain 'Close' column. Check the data structure.\")\n",
+        "\n",
+        "# Example usage:\n",
+        "# max_drawdown = calculate_max_drawdown(your_dataframe)\n"
+      ],
+      "metadata": {
+        "id": "D4rWMKfujTEW"
+      },
+      "execution_count": 451,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# # Function to calculate max drawdown\n",
+        "# def calculate_max_drawdown(close_prices):\n",
+        "#     roll_max = close_prices['Close'].rolling(10, min_periods=1).max()\n",
+        "#     daily_drawdown = close_prices['Close'] / roll_max - 1.0\n",
+        "#     max_drawdown = daily_drawdown.rolling(10, min_periods=1).min()\n",
+        "#     return max_drawdown"
+      ],
+      "metadata": {
+        "id": "XadM1DoZ9Y0M"
+      },
+      "execution_count": 413,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# def select_bottom_by_rsi(symbols, period=10):\n",
+        "#     # Select the symbol with the lowest RSI\n",
+        "#     min_rsi = float('inf')\n",
+        "#     selected_symbol = None\n",
+        "#     for symbol in symbols:\n",
+        "#         data = get_historical_data(symbol, limit=period)\n",
+        "#         rsi = calculate_rsi(data, period=period)[-1]\n",
+        "#         if rsi < min_rsi:\n",
+        "#             min_rsi = rsi\n",
+        "#             selected_symbol = symbol\n",
+        "#     return selected_symbol"
+      ],
+      "metadata": {
+        "id": "ZtpfXjzX9aC-"
+      },
+      "execution_count": 414,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# def select_bottom_by_ma(symbols, period=25):\n",
+        "#     # Select the symbol with the lowest moving average\n",
+        "#     min_ma = float('inf')\n",
+        "#     selected_symbol = None\n",
+        "#     for symbol in symbols:\n",
+        "#         data = get_historical_data(symbol, limit=period)\n",
+        "#         ma = MA(data['close'], timeperiod=period)[-1]\n",
+        "#         if ma < min_ma:\n",
+        "#             min_ma = ma\n",
+        "#             selected_symbol = symbol\n",
+        "#     return selected_symbol"
+      ],
+      "metadata": {
+        "id": "yXPEPd9Z-D_w"
+      },
+      "execution_count": 415,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# def place_order(symbol, qty, side, type='market', time_in_force='gtc'):\n",
+        "#     print(f\"Placing order: {side} {qty} shares of {symbol}\")\n",
+        "#     try:\n",
+        "#         api.submit_order(\n",
+        "#             symbol=symbol,\n",
+        "#             qty=qty,\n",
+        "#             side=side,\n",
+        "#             type=type,\n",
+        "#             time_in_force=time_in_force\n",
+        "#         )\n",
+        "#     except Exception as e:\n",
+        "#         print(f\"An exception occurred: {e}\")\n"
+      ],
+      "metadata": {
+        "id": "tl88RAEBAC6o"
+      },
+      "execution_count": 416,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Function to execute orders\n",
+        "def place_order(symbol, qty, side):\n",
+        "    api.submit_order(\n",
+        "        symbol=symbol,\n",
+        "        qty=qty,\n",
+        "        side=side,\n",
+        "        type='market',\n",
+        "        time_in_force='day'\n",
+        "    )"
+      ],
+      "metadata": {
+        "id": "K87sKFipdCmz"
+      },
+      "execution_count": 452,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# real time historical data\n",
+        "# def get_historical_data(symbol, timeframe='1Day', limit=100):\n",
+        "#     start_date = (datetime.now() - timedelta(days=limit*2)).replace(microsecond=0).isoformat()\n",
+        "#     try:\n",
+        "#         # Using the V2 version of get_bars according to the latest Alpaca documentation\n",
+        "#         barset = api.get_bars(symbol, timeframe, start=start_date, end=None, limit=limit).df\n",
+        "#         print(f\"Data for {symbol} from {start_date}: {barset.head()}\")\n",
+        "#         return barset\n",
+        "#     except tradeapi.rest.APIError as e:\n",
+        "#         print(f\"An API error occurred: {e}\")\n",
+        "#         return None\n",
+        "#     except Exception as e:\n",
+        "#         print(f\"An unexpected error occurred: {e}\")\n",
+        "#         return None"
+      ],
+      "metadata": {
+        "id": "KEUT5Wo2JvOu"
+      },
+      "execution_count": 418,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Specify your desired start date in the format YYYY-MM-DD\n",
+        "# start_date = '2023-08-01T00:00:00'"
+      ],
+      "metadata": {
+        "id": "uqYB2xXNRguG"
+      },
+      "execution_count": 419,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [],
+      "metadata": {
+        "id": "TmVIODSGRj_P"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Function to execute orders\n",
+        "def place_order(symbol, qty, side):\n",
+        "    api.submit_order(\n",
+        "        symbol=symbol,\n",
+        "        qty=qty,\n",
+        "        side=side,\n",
+        "        type='market',\n",
+        "        time_in_force='day'\n",
+        "    )"
+      ],
+      "metadata": {
+        "id": "GYPW7vENLmU6"
+      },
+      "execution_count": 453,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "qqq_data['timestamp'] = pd.to_datetime(qqq_data['timestamp'])\n"
+      ],
+      "metadata": {
+        "id": "G1rmH3muvZrJ",
+        "outputId": "c12b1363-f971-41fe-df36-8127b124344b",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 512
+        }
+      },
+      "execution_count": 454,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "KeyError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/core/indexes/base.py\u001b[0m in \u001b[0;36mget_loc\u001b[0;34m(self, key, method, tolerance)\u001b[0m\n\u001b[1;32m   3801\u001b[0m             \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 3802\u001b[0;31m                 \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_engine\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcasted_key\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   3803\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mKeyError\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/_libs/index.pyx\u001b[0m in \u001b[0;36mpandas._libs.index.IndexEngine.get_loc\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/_libs/index.pyx\u001b[0m in \u001b[0;36mpandas._libs.index.IndexEngine.get_loc\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32mpandas/_libs/hashtable_class_helper.pxi\u001b[0m in \u001b[0;36mpandas._libs.hashtable.PyObjectHashTable.get_item\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32mpandas/_libs/hashtable_class_helper.pxi\u001b[0m in \u001b[0;36mpandas._libs.hashtable.PyObjectHashTable.get_item\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;31mKeyError\u001b[0m: 'timestamp'",
+            "\nThe above exception was the direct cause of the following exception:\n",
+            "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-454-32f98f31b282>\u001b[0m in \u001b[0;36m<cell line: 1>\u001b[0;34m()\u001b[0m\n\u001b[0;32m----> 1\u001b[0;31m \u001b[0mqqq_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m'timestamp'\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mpd\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mto_datetime\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mqqq_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m'timestamp'\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/core/frame.py\u001b[0m in \u001b[0;36m__getitem__\u001b[0;34m(self, key)\u001b[0m\n\u001b[1;32m   3805\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mnlevels\u001b[0m \u001b[0;34m>\u001b[0m \u001b[0;36m1\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3806\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_getitem_multilevel\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 3807\u001b[0;31m             \u001b[0mindexer\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   3808\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mis_integer\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mindexer\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3809\u001b[0m                 \u001b[0mindexer\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mindexer\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/core/indexes/base.py\u001b[0m in \u001b[0;36mget_loc\u001b[0;34m(self, key, method, tolerance)\u001b[0m\n\u001b[1;32m   3802\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_engine\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcasted_key\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3803\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mKeyError\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 3804\u001b[0;31m                 \u001b[0;32mraise\u001b[0m \u001b[0mKeyError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mfrom\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   3805\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mTypeError\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3806\u001b[0m                 \u001b[0;31m# If we have a listlike key, _check_indexing_error will raise\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mKeyError\u001b[0m: 'timestamp'"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Check if 'close' column exists in the DataFrame\n",
+        "qqq_data['timestamp'] = pd.to_datetime(qqq_data['timestamp'])\n",
+        "\n",
+        "if 'close' in qqq_data.columns:\n",
+        "    rsi_10 = calculate_rsi(qqq_data['close'], period=10)\n",
+        "else:\n",
+        "    print(\"The 'close' column does not exist in the DataFrame.\")\n"
+      ],
+      "metadata": {
+        "id": "AVVGYqG3tfz4",
+        "outputId": "7a6004bc-33f0-45f4-c7fd-f530ec662bb8",
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 512
+        }
+      },
+      "execution_count": 445,
+      "outputs": [
+        {
+          "output_type": "error",
+          "ename": "KeyError",
+          "evalue": "ignored",
+          "traceback": [
+            "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
+            "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/core/indexes/base.py\u001b[0m in \u001b[0;36mget_loc\u001b[0;34m(self, key, method, tolerance)\u001b[0m\n\u001b[1;32m   3801\u001b[0m             \u001b[0;32mtry\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 3802\u001b[0;31m                 \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_engine\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcasted_key\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   3803\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mKeyError\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/_libs/index.pyx\u001b[0m in \u001b[0;36mpandas._libs.index.IndexEngine.get_loc\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/_libs/index.pyx\u001b[0m in \u001b[0;36mpandas._libs.index.IndexEngine.get_loc\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32mpandas/_libs/hashtable_class_helper.pxi\u001b[0m in \u001b[0;36mpandas._libs.hashtable.PyObjectHashTable.get_item\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;32mpandas/_libs/hashtable_class_helper.pxi\u001b[0m in \u001b[0;36mpandas._libs.hashtable.PyObjectHashTable.get_item\u001b[0;34m()\u001b[0m\n",
+            "\u001b[0;31mKeyError\u001b[0m: 'timestamp'",
+            "\nThe above exception was the direct cause of the following exception:\n",
+            "\u001b[0;31mKeyError\u001b[0m                                  Traceback (most recent call last)",
+            "\u001b[0;32m<ipython-input-445-4816afdde199>\u001b[0m in \u001b[0;36m<cell line: 2>\u001b[0;34m()\u001b[0m\n\u001b[1;32m      1\u001b[0m \u001b[0;31m# Check if 'close' column exists in the DataFrame\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m----> 2\u001b[0;31m \u001b[0mqqq_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m'timestamp'\u001b[0m\u001b[0;34m]\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mpd\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mto_datetime\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mqqq_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m'timestamp'\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m      3\u001b[0m \u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      4\u001b[0m \u001b[0;32mif\u001b[0m \u001b[0;34m'close'\u001b[0m \u001b[0;32min\u001b[0m \u001b[0mqqq_data\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m      5\u001b[0m     \u001b[0mrsi_10\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mcalculate_rsi\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mqqq_data\u001b[0m\u001b[0;34m[\u001b[0m\u001b[0;34m'close'\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m,\u001b[0m \u001b[0mperiod\u001b[0m\u001b[0;34m=\u001b[0m\u001b[0;36m10\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/core/frame.py\u001b[0m in \u001b[0;36m__getitem__\u001b[0;34m(self, key)\u001b[0m\n\u001b[1;32m   3805\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mnlevels\u001b[0m \u001b[0;34m>\u001b[0m \u001b[0;36m1\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3806\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_getitem_multilevel\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 3807\u001b[0;31m             \u001b[0mindexer\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mcolumns\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   3808\u001b[0m             \u001b[0;32mif\u001b[0m \u001b[0mis_integer\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mindexer\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3809\u001b[0m                 \u001b[0mindexer\u001b[0m \u001b[0;34m=\u001b[0m \u001b[0;34m[\u001b[0m\u001b[0mindexer\u001b[0m\u001b[0;34m]\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;32m/usr/local/lib/python3.10/dist-packages/pandas/core/indexes/base.py\u001b[0m in \u001b[0;36mget_loc\u001b[0;34m(self, key, method, tolerance)\u001b[0m\n\u001b[1;32m   3802\u001b[0m                 \u001b[0;32mreturn\u001b[0m \u001b[0mself\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0m_engine\u001b[0m\u001b[0;34m.\u001b[0m\u001b[0mget_loc\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mcasted_key\u001b[0m\u001b[0;34m)\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3803\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mKeyError\u001b[0m \u001b[0;32mas\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0;32m-> 3804\u001b[0;31m                 \u001b[0;32mraise\u001b[0m \u001b[0mKeyError\u001b[0m\u001b[0;34m(\u001b[0m\u001b[0mkey\u001b[0m\u001b[0;34m)\u001b[0m \u001b[0;32mfrom\u001b[0m \u001b[0merr\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[0m\u001b[1;32m   3805\u001b[0m             \u001b[0;32mexcept\u001b[0m \u001b[0mTypeError\u001b[0m\u001b[0;34m:\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n\u001b[1;32m   3806\u001b[0m                 \u001b[0;31m# If we have a listlike key, _check_indexing_error will raise\u001b[0m\u001b[0;34m\u001b[0m\u001b[0;34m\u001b[0m\u001b[0m\n",
+            "\u001b[0;31mKeyError\u001b[0m: 'timestamp'"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "import pandas as pd\n",
+        "\n",
+        "# Strategy execution function\n",
+        "def execute_strategy(symbols):\n",
+        "    for symbol in symbols:\n",
+        "        data = get_historical_data(symbol, limit=100)\n",
+        "        if data is not None:\n",
+        "            # Check if the 'timestamp' column is in the correct datetime format\n",
+        "            if 'timestamp' in data.columns:\n",
+        "                data['timestamp'] = pd.to_datetime(data['timestamp'])  # Convert timestamp to datetime\n",
+        "                data.set_index('timestamp', inplace=True)  # Set 'timestamp' as the index\n",
+        "\n",
+        "                print(f\"Retrieved data for {symbol}:\")\n",
+        "                print(data.head())  # Debugging: print the first few rows\n",
+        "                # Check if the 'close' column is in the DataFrame\n",
+        "                # check the structure of the Dataframe\n",
+        "                print(data.columns)\n",
+        "\n",
+        "                if 'close' not in data.columns:\n",
+        "                    print(f\"Data for {symbol} does not contain 'close' column. Check the data structure.\")\n",
+        "                    continue  # Skip to the next symbol if 'close' is not in columns\n",
+        "\n",
+        "                # Correct usage: passing the 'close' column to calculate_rsi\n",
+        "                rsi_10 = calculate_rsi(data['close'], period=10)\n",
+        "                rsi_12 = calculate_rsi(data['close'], period=12)\n",
+        "\n",
+        "                # Example: assign equal weight to each position, and assume 10,000 total capital\n",
+        "                account_info = api.get_account()\n",
+        "                total_capital = float(account_info.equity)\n",
+        "                position_size = total_capital / 5  # Example: 5 positions\n",
+        "\n",
+        "                if rsi_10 > 79:\n",
+        "                    qty = position_size // data['close'].iloc[-1]\n",
+        "                    place_order(symbol, qty, 'buy')\n",
+        "                elif rsi_10 > 32:\n",
+        "                    qty_tqqq = position_size // data['close'].iloc[-1]\n",
+        "                    qty_bsv = position_size // get_historical_data('BSV', limit=1)['close'].iloc[-1]\n",
+        "                    place_order('TQQQ', qty_tqqq, 'buy')\n",
+        "                    place_order('BSV', qty_bsv, 'buy')\n",
+        "                elif rsi_12 > 6:\n",
+        "                    qty_dbmf = position_size // get_historical_data('DBMF', limit=1)['close'].iloc[-1]\n",
+        "                    qty_sqqq = position_size // get_historical_data('SQQQ', limit=1)['close'].iloc[-1]\n",
+        "                    place_order('DBMF', qty_dbmf, 'buy')\n",
+        "                    place_order('SQQQ', qty_sqqq, 'buy')\n",
+        "                else:\n",
+        "                    tmf_data = get_historical_data('TMF', limit=10)\n",
+        "                    if tmf_data is not None:\n",
+        "                        # Check if 'close' column exists in tmf_data\n",
+        "                        if 'close' not in tmf_data.columns:\n",
+        "                            print(\"TMF data does not contain 'close' column. Check the data structure.\")\n",
+        "                            continue  # Skip to the next symbol if 'close' is not in columns\n",
+        "\n",
+        "                        max_drawdown_10d = calculate_max_drawdown(tmf_data['close']).iloc[-1]\n",
+        "                        if max_drawdown_10d > -0.07:\n",
+        "                            qty_dbmf = position_size // tmf_data['close'].iloc[-1]\n",
+        "                            qty_tmv = position_size // get_historical_data('TMV', limit=1)['close'].iloc[-1]\n",
+        "                            place_order('DBMF', qty_dbmf, 'buy')\n",
+        "                            place_order('TMV', qty_tmv, 'buy')\n",
+        "                        else:\n",
+        "                            qty_tmf = position_size // tmf_data['close'].iloc[-1]\n",
+        "                            place_order('TMF', qty_tmf, 'buy')\n",
+        "                    else:\n",
+        "                        print(f\"Failed to retrieve TMF data for {symbol}.\")\n",
+        "            else:\n",
+        "                print(f\"Data for {symbol} does not contain 'timestamp' column in the correct format.\")\n",
+        "        else:\n",
+        "            print(f\"Failed to retrieve data for {symbol}.\")\n",
+        "\n",
+        "if __name__ == \"__main__\":\n",
+        "    symbols = ['QQQ']  # Replace with your desired symbols\n",
+        "    execute_strategy(symbols)\n"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "zA7X8PtmlEaN",
+        "outputId": "db613503-802c-40e6-9d22-06d8387c8128"
+      },
+      "execution_count": 461,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Retrieved data for QQQ:\n",
+            "                            close     high     low  trade_count    open  \\\n",
+            "timestamp                                                                 \n",
+            "2023-01-03 05:00:00+00:00  264.48  270.155  262.13       357072  268.65   \n",
+            "2023-01-04 05:00:00+00:00  265.74  267.450  262.53       346697  266.64   \n",
+            "2023-01-05 05:00:00+00:00  261.58  264.210  261.26       296085  264.04   \n",
+            "2023-01-06 05:00:00+00:00  268.80  269.940  260.34       369601  263.35   \n",
+            "2023-01-09 05:00:00+00:00  270.54  275.290  269.92       330894  270.83   \n",
+            "\n",
+            "                             volume        vwap  \n",
+            "timestamp                                        \n",
+            "2023-01-03 05:00:00+00:00  42811556  264.898426  \n",
+            "2023-01-04 05:00:00+00:00  48183110  265.305467  \n",
+            "2023-01-05 05:00:00+00:00  46112140  262.641040  \n",
+            "2023-01-06 05:00:00+00:00  55494289  265.816694  \n",
+            "2023-01-09 05:00:00+00:00  46027182  272.658952  \n",
+            "Data for QQQ does not contain 'timestamp' column in the correct format.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# # Strategy execution function\n",
+        "# def execute_strategy():\n",
+        "#     qqq_data = get_historical_data('QQQ', limit=100)\n",
+        "#     if qqq_data is not None:\n",
+        "#         print(qqq_data.head())  # Debugging: print the first few rows\n",
+        "#         # Check if the 'Close' column is in the DataFrame\n",
+        "#         if 'Close' not in qqq_data.columns:\n",
+        "#             print(\"Data does not contain 'Close' column. Check the data structure.\")\n",
+        "#             return  # Exit the function if 'Close' is not in columns\n",
+        "\n",
+        "#         # Correct usage: passing the 'Close' column to calculate_rsi\n",
+        "#         rsi_10 = calculate_rsi(qqq_data['Close'], period=10)\n",
+        "#         rsi_12 = calculate_rsi(qqq_data['Close'], period=12)\n",
+        "\n",
+        "#         # Example: assign equal weight to each position, and assume 10,000 total capital\n",
+        "#         account_info = api.get_account()\n",
+        "#         total_capital = float(account_info.equity)\n",
+        "#         position_size = total_capital / 5  # Example: 5 positions\n",
+        "\n",
+        "#         if rsi_10 > 79:\n",
+        "#             qty = position_size // qqq_data['Close'].iloc[-1]\n",
+        "#             place_order('UVXY', qty, 'buy')\n",
+        "#         elif rsi_10 > 32:\n",
+        "#             qty_tqqq = position_size // qqq_data['Close'].iloc[-1]\n",
+        "#             qty_bsv = position_size // get_historical_data('BSV', limit=1)['Close'].iloc[-1]\n",
+        "#             place_order('TQQQ', qty_tqqq, 'buy')\n",
+        "#             place_order('BSV', qty_bsv, 'buy')\n",
+        "#         elif rsi_12 > 6:\n",
+        "#             qty_dbmf = position_size // get_historical_data('DBMF', limit=1)['Close'].iloc[-1]\n",
+        "#             qty_sqqq = position_size // get_historical_data('SQQQ', limit=1)['Close'].iloc[-1]\n",
+        "#             place_order('DBMF', qty_dbmf, 'buy')\n",
+        "#             place_order('SQQQ', qty_sqqq, 'buy')\n",
+        "#         else:\n",
+        "#             tmf_data = get_historical_data('TMF', limit=10)\n",
+        "#             if tmf_data is not None:\n",
+        "#                 max_drawdown_10d = calculate_max_drawdown(tmf_data['Close']).iloc[-1]\n",
+        "#                 if max_drawdown_10d > -0.07:\n",
+        "#                     qty_dbmf = position_size // tmf_data['Close'].iloc[-1]\n",
+        "#                     qty_tmv = position_size // get_historical_data('TMV', limit=1)['Close'].iloc[-1]\n",
+        "#                     place_order('DBMF', qty_dbmf, 'buy')\n",
+        "#                     place_order('TMV', qty_tmv, 'buy')\n",
+        "#                 else:\n",
+        "#                     qty_tmf = position_size // tmf_data['Close'].iloc[-1]\n",
+        "#                     place_order('TMF', qty_tmf, 'buy')\n",
+        "#     else:\n",
+        "#         print(\"Failed to retrieve QQQ data.\")\n",
+        "\n",
+        "# if __name__ == \"__main__\":\n",
+        "#     execute_strategy()"
+      ],
+      "metadata": {
+        "id": "VbCPXrVPJ1N-"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# if __name__ == \"__main__\":\n",
+        "#     execute_strategy()"
+      ],
+      "metadata": {
+        "id": "7XurYSQMN2kw"
+      },
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
